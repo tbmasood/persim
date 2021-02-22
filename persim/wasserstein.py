@@ -68,7 +68,9 @@ def wasserstein(dgm1, dgm2, order=1.0, internal_p=math.inf, matching=False):
         N = 1
     
     # Step 1: Compute CSM between S and dgm2, including points on diagonal
-
+    
+    S = S[:, 0:2]
+    T = T[:, 0:2]
     if internal_p == 1.0:
         DUL = metrics.pairwise.pairwise_distances(S, T, metric = "l1")
     elif internal_p == 2.0:
@@ -84,8 +86,8 @@ def wasserstein(dgm1, dgm2, order=1.0, internal_p=math.inf, matching=False):
     cp = np.cos(np.pi/4)
     sp = np.sin(np.pi/4)
     R = np.array([[cp, -sp], [sp, cp]])
-    S = S[:, 0:2].dot(R)
-    T = T[:, 0:2].dot(R)
+    S = S.dot(R)
+    T = T.dot(R)
     D = np.zeros((M+N, M+N))
     D[0:M, 0:N] = DUL
     UR = np.max(D)*np.ones((M, M))
