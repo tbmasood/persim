@@ -25,6 +25,10 @@ def wasserstein(dgm1, dgm2, order=1.0, internal_p=math.inf, matching=False):
         array of birth/death pairs for PD 1
     dgm2: Nx(>=2) 
         array of birth/death paris for PD 2
+    order: float, default 1.0
+        the parameter q in q-Wasserstein distance
+    internal_p: float, default inf
+        the Lp distance used for distance between persistence pairs 
     matching: bool, default False
         if True, return matching information and cross-similarity matrix
     Returns 
@@ -96,6 +100,7 @@ def wasserstein(dgm1, dgm2, order=1.0, internal_p=math.inf, matching=False):
     if order == 1.0:
         matchdist = np.sum(D[matchi, matchj])
     elif order == math.inf:
+        # Taking max value here provides the L_\inf distance 
         matchdist = np.max(D[matchi, matchj])
     else:
         matchdist = np.sum(D[matchi, matchj]**order)**(1.0/order)
