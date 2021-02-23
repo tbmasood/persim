@@ -77,11 +77,11 @@ def lifted_wasserstein(dgm1, dgm2, alpha=1.0, beta=1.0, gamma=1.0, order=1.0, ma
     D = np.zeros((M+N, M+N))
     for i in range(M):
         for j in range(N):
-            del_b = math.abs(S[i, 0] - T[j, 0])
-            del_d = math.abs(S[i, 1] - T[j, 1])
-            del_x = math.abs(S[i, 2] - T[j, 2])
-            del_y = math.abs(S[i, 3] - T[j, 3])
-            del_z = math.abs(S[i, 4] - T[j, 4])
+            del_b = abs(S[i, 0] - T[j, 0])
+            del_d = abs(S[i, 1] - T[j, 1])
+            del_x = abs(S[i, 2] - T[j, 2])
+            del_y = abs(S[i, 3] - T[j, 3])
+            del_z = abs(S[i, 4] - T[j, 4])
             if order == 1.0:
                 D[i, j] = D[j, i] = alpha * del_b + beta * del_d + gamma*(del_x + del_y + del_z)
             else:
@@ -89,20 +89,20 @@ def lifted_wasserstein(dgm1, dgm2, alpha=1.0, beta=1.0, gamma=1.0, order=1.0, ma
     UR = np.max(D)*np.ones((M, M))
     for i in range(M):
         if order == 1.0:
-            UR[i][i] = alpha * math.abs(S[i, 0]) + beta * math.abs(S[i, 1]) \
-                + gamma*( math.abs(S[i, 2]) + math.abs(S[i, 3]) + math.abs(S[i, 4]))
+            UR[i][i] = alpha * abs(S[i, 0]) + beta * abs(S[i, 1]) \
+                + gamma*( abs(S[i, 2]) + abs(S[i, 3]) + abs(S[i, 4]))
         else:
-            UR[i][i] = (alpha * math.abs(S[i, 0])**order + beta * math.abs(S[i, 1])**order \
-                + gamma*( math.abs(S[i, 2])**order + math.abs(S[i, 3])**order + math.abs(S[i, 4])**order) )**(1.0/order)
+            UR[i][i] = (alpha * abs(S[i, 0])**order + beta * abs(S[i, 1])**order \
+                + gamma*( abs(S[i, 2])**order + abs(S[i, 3])**order + abs(S[i, 4])**order) )**(1.0/order)
     D[0:M, N:N+M] = UR
     UL = np.max(D)*np.ones((N, N))
     for i in range(N):
         if order == 1.0:
-            UL[i][i] = alpha * math.abs(T[i, 0]) + beta * math.abs(T[i, 1]) 
-                + gamma*(math.abs(T[i, 2]) + math.abs(T[i, 3]) + math.abs(T[i, 4]))
+            UL[i][i] = alpha * abs(T[i, 0]) + beta * abs(T[i, 1]) \
+                + gamma*(abs(T[i, 2]) + abs(T[i, 3]) + abs(T[i, 4]))
         else:
-            UL[i][i] = (alpha * math.abs(T[i, 0])**order + beta * math.abs(T[i, 1])**order 
-                + gamma*(math.abs(T[i, 2])**order + math.abs(T[i, 3])**order + math.abs(T[i, 4])**order) )**(1.0/order)
+            UL[i][i] = (alpha * abs(T[i, 0])**order + beta * abs(T[i, 1])**order \
+                + gamma*(abs(T[i, 2])**order + abs(T[i, 3])**order + abs(T[i, 4])**order) )**(1.0/order)
     D[M:N+M, 0:N] = UL
 
     # Step 2: Run the hungarian algorithm
