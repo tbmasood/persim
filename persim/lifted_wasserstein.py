@@ -23,10 +23,12 @@ def lifted_wasserstein(dgm1, dgm2, alpha=1.0, beta=1.0, gamma=1.0, order=1.0, ma
     See the `distances` notebook for an example of how to use this.
     Parameters
     ------------
-    dgm1: Mx(>=5) 
-        array of birth/death pairs and (x,y,z) locations for PD 1
-    dgm2: Nx(>=5) 
-        array of birth/death paris and (x,y,z) locations for PD 2
+    dgm1: Mx(>=8) 
+        PD 1 specified as an array of birth/death pairs followed by (x,y,z) 
+        locations of extrema and (x,y,z) coordinates of the saddle point.
+    dgm2: Nx(>8) 
+        PD 2 specified as an array of birth/death pairs followed by (x,y,z) 
+        locations of extrema and (x,y,z) coordinates of the saddle point.
     alpha: float, default 1.0
         weight factor for birth column
     beta: float, default 1.0
@@ -73,6 +75,13 @@ def lifted_wasserstein(dgm1, dgm2, alpha=1.0, beta=1.0, gamma=1.0, order=1.0, ma
         T = np.array([[0, 0, 0, 0, 0]])
         N = 1
     
+    def compute_dist(del_b, del_d, del_x, del_y, del_z): 
+        if order == 1.0:
+            return alpha * del_b + beta * del_d + gamma*(del_x + del_y + del_z)
+        else:
+            return (alpha * del_b**order + beta * del_d**order \
+                + gamma*(del_x**order + del_y**order + del_z**order))**(1.0/order) 
+    
     # Step 1: Compute CSM between S and T, including points on diagonal
     D = np.zeros((M+N, M+N))
     for i in range(M):
@@ -82,27 +91,27 @@ def lifted_wasserstein(dgm1, dgm2, alpha=1.0, beta=1.0, gamma=1.0, order=1.0, ma
             del_x = abs(S[i, 2] - T[j, 2])
             del_y = abs(S[i, 3] - T[j, 3])
             del_z = abs(S[i, 4] - T[j, 4])
-            if order == 1.0:
-                D[i, j] = D[j, i] = alpha * del_b + beta * del_d + gamma*(del_x + del_y + del_z)
-            else:
-                D[i, j] = D[j, i] = (alpha * del_b**order + beta * del_d**order + gamma*(del_x**order + del_y**order + del_z**order))**(1.0/order)
+            D[i, j] = D[j, i] = compute_dist(del_b, del_d, del_x, del_y, del_z)
+            
     UR = np.max(D)*np.ones((M, M))
     for i in range(M):
-        if order == 1.0:
-            UR[i][i] = alpha * abs(S[i, 0]) + beta * abs(S[i, 1]) \
-                + gamma*( abs(S[i, 2]) + abs(S[i, 3]) + abs(S[i, 4]))
-        else:
-            UR[i][i] = (alpha * abs(S[i, 0])**order + beta * abs(S[i, 1])**order \
-                + gamma*( abs(S[i, 2])**order + abs(S[i, 3])**order + abs(S[i, 4])**order) )**(1.0/order)
+        del_b = abs(S[i, 0])
+        del_d = abs(S[i, 1])
+        del_x = abs(S[i, 2] - S[i, 5])
+        del_y = abs(S[i, 3] - S[i, 6])
+        del_z = abs(S[i, 4] - S[i, 7])
+        UR[i][i] = compute_dist(del_b, del_d, del_x, del_y, del_z)
+        
     D[0:M, N:N+M] = UR
     UL = np.max(D)*np.ones((N, N))
     for i in range(N):
-        if order == 1.0:
-            UL[i][i] = alpha * abs(T[i, 0]) + beta * abs(T[i, 1]) \
-                + gamma*(abs(T[i, 2]) + abs(T[i, 3]) + abs(T[i, 4]))
-        else:
-            UL[i][i] = (alpha * abs(T[i, 0])**order + beta * abs(T[i, 1])**order \
-                + gamma*(abs(T[i, 2])**order + abs(T[i, 3])**order + abs(T[i, 4])**order) )**(1.0/order)
+        del_b = abs(T[i, 0])
+        del_d = abs(T[i, 1])
+        del_x = abs(T[i, 2] - T[i, 5])
+        del_y = abs(T[i, 3] - T[i, 6])
+        del_z = abs(T[i, 4] - T[i, 7])
+        UL[i][i] = compute_dist(del_b, del_d, del_x, del_y, del_z)
+            
     D[M:N+M, 0:N] = UL
 
     # Step 2: Run the hungarian algorithm
