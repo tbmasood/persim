@@ -80,21 +80,22 @@ def wasserstein(dgm1, dgm2, order=1.0, internal_p=math.inf, matching=False):
     else:
         DUL = metrics.pairwise.pairwise_distances(S, T, metric = "minkowski", p=internal_p) 
     
-    # Put diagonal elements into the matrix
-    # Rotate the diagrams to make it easy to find the straight line
-    # distance to the diagonal
-    cp = np.cos(np.pi/4)
-    sp = np.sin(np.pi/4)
-    R = np.array([[cp, -sp], [sp, cp]])
-    S = S.dot(R)
-    T = T.dot(R)
     D = np.zeros((M+N, M+N))
     D[0:M, 0:N] = DUL
     UR = np.max(D)*np.ones((M, M))
-    np.fill_diagonal(UR, S[:, 1])
+    for i in range(M):
+        if internal_p == math.inf:
+            UR[i, i] = abs(S[i, 1] - S[i, 0]) / 2.0
+        else:
+            UR[i, i] = abs(S[i, 1] - S[i, 0]) / (2.0**(1.0-1.0/internal_p))
+        
     D[0:M, N:N+M] = UR
     UL = np.max(D)*np.ones((N, N))
-    np.fill_diagonal(UL, T[:, 1])
+    for i in range(N):
+        if internal_p == math.inf:
+            UL[i, i] = abs(T[i, 1] - T[i, 0]) / 2.0
+        else:
+            UL[i, i] = abs(T[i, 1] - T[i, 0]) / (2.0**(1.0-1.0/internal_p))
     D[M:N+M, 0:N] = UL
 
     # Step 2: Run the hungarian algorithm
